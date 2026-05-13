@@ -4,7 +4,7 @@
 # PmetricsLitSim
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/LAPKB/PmetricsLitSim/actions/workflows/R-CMD-check.yaml/badge.svghttps://github.com/LAPKB/PmetricsLitSim/actions/workflows/R-CMD-check.yaml/badge.svghttps://github.com/LAPKB/PmetricsLitSim/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/LAPKB/PmetricsLitSim/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/LAPKB/PmetricsLitSim/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/LAPKB/PmetricsLitSim/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `PmetricsLitSim` is a Shiny companion app for the
