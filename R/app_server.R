@@ -76,7 +76,7 @@ output$corr_format_info <- shiny::renderUI({
 output$param_editor <- DT::renderDT({
   df <- params_tbl()
   # Dynamic column names based on input types
-  iiv_col_name <- if (input$iiv_input_type == "omega2") "IIV (ω²)" else "IIV (CV%)"
+  iiv_col_name <- if (input$iiv_input_type == "omega2") "IIV (omega^2)" else "IIV (CV%)"
   theta_unc_name <- if (input$rse_input_type == "se") "Theta SE" else "Theta RSE%"
   iiv_unc_name <- if (input$rse_input_type == "se") "IIV SE" else "IIV RSE%"
   DT::datatable(
@@ -232,8 +232,8 @@ shiny::observeEvent(input$param_file, {
   # Rename to internal standard names
   df <- df |>
   dplyr::rename(rse_theta = !!theta_unc_col, cv_iiv = !!iiv_col, rse_iiv = !!iiv_unc_col) |>
-  dplyr::mutate(param = as.character(param)) |>
-  dplyr::mutate(dplyr::across(c(theta, rse_theta, cv_iiv, rse_iiv), as.numeric))
+  dplyr::mutate(param = as.character(rlang::.data$param)) |>
+  dplyr::mutate(dplyr::across(tidyselect::all_of(c("theta", "rse_theta", "cv_iiv", "rse_iiv")), as.numeric))
   
   # Add min/max columns if missing, with defaults
   if (!"min" %in% names(df)) {
@@ -279,15 +279,15 @@ sim_result <- shiny::eventReactive(input$simulate, {
   if (input$rse_input_type == "se") {
     par_df <- par_df |>
     dplyr::mutate(
-      rse_theta = ifelse(theta != 0 & !is.na(rse_theta), (rse_theta / abs(theta)) * 100, 0),
-      rse_iiv = ifelse(cv_iiv != 0 & !is.na(rse_iiv), (rse_iiv / cv_iiv) * 100, 0)
+      rse_theta = ifelse(rlang::.data$theta != 0 & !is.na(rlang::.data$rse_theta), (rlang::.data$rse_theta / abs(rlang::.data$theta)) * 100, 0),
+      rse_iiv = ifelse(rlang::.data$cv_iiv != 0 & !is.na(rlang::.data$rse_iiv), (rlang::.data$rse_iiv / rlang::.data$cv_iiv) * 100, 0)
     )
   }
   
-  # Convert omega² to CV% if needed: CV = sqrt(exp(omega²) - 1) * 100
+  # Convert omega^2 to CV% if needed: CV = sqrt(exp(omega^2) - 1) * 100
   if (input$iiv_input_type == "omega2") {
     par_df <- par_df |>
-    dplyr::mutate(cv_iiv = ifelse(cv_iiv > 0, sqrt(exp(cv_iiv) - 1) * 100, 0))
+    dplyr::mutate(cv_iiv = ifelse(rlang::.data$cv_iiv > 0, sqrt(exp(rlang::.data$cv_iiv) - 1) * 100, 0))
   }
   
   theta_df <- sample_thetas(n, par_df)
@@ -456,7 +456,7 @@ output$sampled_summary <- DT::renderDT({
     mean(theta_df[[paste0("theta_", p)]], na.rm = TRUE)
   })
   theta_sds <- sapply(param_names, function(p) {
-    sd(theta_df[[paste0("theta_", p)]], na.rm = TRUE)
+    stats::sd(theta_df[[paste0("theta_", p)]], na.rm = TRUE)
   })
   
   # Theta RSE% from samples: (SD/mean)*100
@@ -468,7 +468,7 @@ output$sampled_summary <- DT::renderDT({
     mean(omega_df[[paste0("omega_", p)]], na.rm = TRUE)
   })
   omega_sds <- sapply(param_names, function(p) {
-    sd(omega_df[[paste0("omega_", p)]], na.rm = TRUE)
+    stats::sd(omega_df[[paste0("omega_", p)]], na.rm = TRUE)
   })
   
   # Convert omega (CV as decimal) to display format
@@ -546,7 +546,7 @@ output$sampled_summary <- DT::renderDT({
     )
     
     # Dynamic column names based on input types
-    iiv_col_name <- if (input$iiv_input_type == "omega2") "IIV (ω²)" else "IIV (CV%)"
+    iiv_col_name <- if (input$iiv_input_type == "omega2") "IIV (omega^2)" else "IIV (CV%)"
     theta_unc_name <- if (input$rse_input_type == "se") "Theta SE" else "Theta RSE%"
     iiv_unc_name <- if (input$rse_input_type == "se") "IIV SE" else "IIV RSE%"
     
@@ -599,7 +599,7 @@ output$sampled_summary <- DT::renderDT({
         }
         
         # Calculate correlation matrix of etas
-        corr_mat <- cor(eta_df, use = "pairwise.complete.obs")
+        corr_mat <- stats::cor(eta_df, use = "pairwise.complete.obs")
         
         # Clean up column names (remove "eta_" prefix for display)
         clean_names <- gsub("^eta_", "", colnames(corr_mat))
@@ -679,7 +679,7 @@ output$sampled_summary <- DT::renderDT({
           
           for (par in param_names) {
             vals <- df_plot[[par]]
-            hist(vals, breaks = n_bins, main = par, xlab = "", col = "steelblue", border = "white")
+            graphics::hist(vals, breaks = n_bins, main = par, xlab = "", col = "steelblue", border = "white")
           }
         }, height = function() {
           shiny::req(sim_result())

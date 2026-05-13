@@ -3,6 +3,8 @@ Title: Pmetrics Literature Model Simulator App
 Version: 0.0.2
 Authors@R: 
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre"))
+Depends: 
+    R (>= 4.1.0)
 Description: Standalone golem Shiny app for the Pmetrics literature model
     simulator.
 License: GPL (>= 3)
@@ -15,6 +17,7 @@ Imports:
     MASS,
     Matrix,
     purrr,
+    rlang,
     readr,
     shiny,
     stats,
@@ -22,4 +25,3 @@ Imports:
     tidyselect
 Config/roxygen2/version: 8.0.0
 Encoding: UTF-8
-LazyData: true

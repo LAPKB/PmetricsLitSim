@@ -220,7 +220,7 @@ app_ui <- function(request) {
       inline = TRUE, selected = "manual"),
       shiny::fluidRow(
         shiny::column(6, shiny::radioButtons("iiv_input_type", "IIV:",
-        choices = c("CV%" = "cv", "ω²" = "omega2"),
+        choices = c("CV%" = "cv", "omega^2" = "omega2"),
         inline = TRUE, selected = "cv")),
         shiny::column(6, shiny::radioButtons("rse_input_type", "Uncertainty:",
         choices = c("RSE%" = "rse", "SE" = "se"),

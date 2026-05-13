@@ -6,11 +6,11 @@ build_correlation <- function(params, edges) {
   if (!is.null(edges) && nrow(edges) > 0) {
     edges2 <- edges |>
       dplyr::mutate(
-        i = as.character(i),
-        j = as.character(j)
+        i = as.character(.data$i),
+        j = as.character(.data$j)
       ) |>
-      dplyr::filter(i %in% params, j %in% params, i != j) |>
-      dplyr::mutate(rho = pmax(pmin(as.numeric(rho), 0.9999), -0.9999))
+      dplyr::filter(.data$i %in% params, .data$j %in% params, .data$i != .data$j) |>
+      dplyr::mutate(rho = pmax(pmin(as.numeric(.data$rho), 0.9999), -0.9999))
 
     for (k in seq_len(nrow(edges2))) {
       ii <- edges2$i[k]
@@ -141,7 +141,9 @@ sample_thetas <- function(n, params_tbl) {
         )
       }
 
-      tibble::tibble(!!paste0("theta_", par) := samples)
+      col <- list(samples)
+      names(col) <- paste0("theta_", par)
+      tibble::as_tibble(col)
     }
   )
 }
@@ -187,6 +189,5 @@ maybe_transpose <- function(df, transpose = FALSE) {
   }
 
   tibble::as_tibble(t(df), rownames = "parameter") |>
-    dplyr::rename_with(~ "parameter", 1) |>
-    dplyr::mutate(parameter = as.character(parameter))
+    dplyr::mutate(parameter = as.character(rlang::.data$parameter))
 }
