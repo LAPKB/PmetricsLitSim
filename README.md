@@ -20,8 +20,8 @@ models.
 ### If automatic installation fails…
 
 You can also manually install `PmetricsLitSim` from
-[r-universe](https://lapkb.r-universe.dev/Pmetrics). To install, you
-must specify `r-universe` as the repository using
+[r-universe](https://lapkb.r-universe.dev/PmetricsLitSim). To install,
+you must specify `r-universe` as the repository using
 
 ``` r
 install.packages("PmetricsLitSim", repos = "https://lapkb.r-universe.dev")
