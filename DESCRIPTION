@@ -1,6 +1,6 @@
 Package: PmetricsLitSim
 Title: Pmetrics Literature Model Simulator App
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: 
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre"))
 Description: Standalone golem Shiny app for the Pmetrics literature model
