@@ -11,9 +11,11 @@ License: GPL (>= 3)
 Imports: 
     clipr,
     config,
+    deSolve,
     dplyr,
     DT,
     golem,
+    jsonlite,
     MASS,
     Matrix,
     purrr,
