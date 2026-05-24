@@ -1,3 +1,12 @@
+#' Build a symmetric correlation matrix from pairwise edges
+#'
+#' @param params Character vector of parameter names.
+#' @param edges Data frame with `i`, `j`, and `rho` columns describing
+#'   pairwise correlations.
+#'
+#' @return A symmetric correlation matrix with unit diagonal.
+#' @keywords internal
+#' @noRd
 build_correlation <- function(params, edges) {
   p <- length(params)
   R <- diag(1, p)
@@ -24,6 +33,15 @@ build_correlation <- function(params, edges) {
   R
 }
 
+#' Sample inter-individual variability values for a parameter
+#'
+#' @param n Number of samples to draw.
+#' @param cv_percent Typical coefficient of variation in percent.
+#' @param rse_iiv_percent Relative standard error for the IIV value in percent.
+#'
+#' @return Numeric vector of sampled variability values on the CV scale.
+#' @keywords internal
+#' @noRd
 draw_omega <- function(n, cv_percent, rse_iiv_percent) {
   if (is.na(cv_percent) || is.na(rse_iiv_percent) || cv_percent <= 0) {
     return(rep(0, n))
@@ -35,6 +53,14 @@ draw_omega <- function(n, cv_percent, rse_iiv_percent) {
   stats::rlnorm(n, meanlog = log(cv), sdlog = sdlog)
 }
 
+#' Convert sampled variability values to a covariance matrix
+#'
+#' @param omega_vec Numeric vector of sampled variability values.
+#' @param R Correlation matrix between parameters.
+#'
+#' @return A symmetric positive semi-definite covariance matrix.
+#' @keywords internal
+#' @noRd
 make_omega_cov <- function(omega_vec, R) {
   omega_vec <- as.numeric(omega_vec)
   p <- length(omega_vec)
@@ -64,6 +90,17 @@ make_omega_cov <- function(omega_vec, R) {
   }
 }
 
+#' Sample eta values for each parameter set
+#'
+#' @param n Number of samples to draw.
+#' @param theta_names Character vector of parameter names.
+#' @param omega_samples_by_param Matrix or data frame of sampled variability
+#'   values by parameter.
+#' @param R Correlation matrix between parameters.
+#'
+#' @return Tibble of eta samples with one column per parameter.
+#' @keywords internal
+#' @noRd
 sample_etas <- function(n, theta_names, omega_samples_by_param, R) {
   p <- length(theta_names)
   out <- matrix(0, nrow = n, ncol = p)
@@ -98,6 +135,15 @@ sample_etas <- function(n, theta_names, omega_samples_by_param, R) {
   tibble::as_tibble(out)
 }
 
+#' Sample theta values under optional bounds
+#'
+#' @param n Number of samples to draw.
+#' @param params_tbl Parameter table containing `param`, `theta`,
+#'   `rse_theta`, and optional `min` and `max` columns.
+#'
+#' @return Tibble of theta samples with one column per parameter.
+#' @keywords internal
+#' @noRd
 sample_thetas <- function(n, params_tbl) {
   if (!"min" %in% names(params_tbl)) {
     params_tbl$min <- 0
@@ -148,6 +194,15 @@ sample_thetas <- function(n, params_tbl) {
   )
 }
 
+#' Sample variability values for all parameters
+#'
+#' @param n Number of samples to draw.
+#' @param params_tbl Parameter table containing `param`, `cv_iiv`, and
+#'   `rse_iiv` columns.
+#'
+#' @return Tibble of sampled variability values with one column per parameter.
+#' @keywords internal
+#' @noRd
 sample_omegas <- function(n, params_tbl) {
   ome <- purrr::pmap(
     list(params_tbl$cv_iiv, params_tbl$rse_iiv),
@@ -157,6 +212,16 @@ sample_omegas <- function(n, params_tbl) {
   dplyr::bind_cols(ome)
 }
 
+#' Combine theta and eta samples into final parameter values
+#'
+#' @param theta_df Tibble of sampled theta values.
+#' @param eta_df Tibble of sampled eta values.
+#' @param param_names Character vector of parameter names to compose.
+#' @param params_tbl Optional parameter table containing parameter bounds.
+#'
+#' @return Tibble of simulated parameter values.
+#' @keywords internal
+#' @noRd
 compose_params <- function(theta_df, eta_df, param_names, params_tbl = NULL) {
   out <- tibble::tibble(.rows = nrow(theta_df))
 
@@ -183,11 +248,21 @@ compose_params <- function(theta_df, eta_df, param_names, params_tbl = NULL) {
   out
 }
 
+#' Optionally transpose the output table for display
+#'
+#' @param df Data frame or tibble to transform.
+#' @param transpose Logical flag indicating whether rows and columns should be
+#'   swapped.
+#'
+#' @return Tibble in the original or transposed orientation.
+#' @keywords internal
+#' @noRd
 maybe_transpose <- function(df, transpose = FALSE) {
   if (!transpose) {
     return(df)
   }
 
-  tibble::as_tibble(t(df), rownames = "parameter") |>
-    dplyr::mutate(parameter = as.character(rlang::.data$parameter))
+  out <- tibble::as_tibble(t(df), rownames = "parameter")
+  out$parameter <- as.character(out$parameter)
+  out
 }
